@@ -19,7 +19,7 @@
 		wsUri += "//" + loc.host + ":5000";
 		console.log("URI is = " + wsUri);
 
-		ws = new WebSocket(wsUri);
+		ws = new WebSocket(wsUri, "ws-web-server");
 		console.log("connecting....");
 
 		ws.onopen = function() {
@@ -31,6 +31,7 @@
 		ws.onmessage = function(msg) {
 			console.log("received data:\n");
 			console.log(msg.data);
+			document.getElementById("textSection").innerHTML = msg.data;
 		}
 
 		function wsSend(command) {
@@ -56,8 +57,13 @@
 		function getContainersInfo() {
 			console.log("getContainersInfo");
 //			alert('getContainersInfo');
-			readTextFile("getContainersInfo.txt");
+//			readTextFile("getContainersInfo.txt");
 			wsSend("getContainersInfo");
+		}
+
+		function getDeviceState() {
+			console.log("getDeviceState");
+			wsSend("getDeviceState");
 		}
 
 		</script>
@@ -65,6 +71,7 @@
 	        <font face="Arial">
 		<h1>container management</h1>
 		<button type="button" onclick='getContainersInfo()'>getContainersInfo</button>
+		<button type="button" onclick='getDeviceState()'>getDeviceState</button>
 		<div id="textSection"></div>
         	</font>
 	</body>
