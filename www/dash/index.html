@@ -11,15 +11,17 @@
 		var ws;
 		var wsUri = "ws:";
 		var loc = window.location;
+		var port = ":4001";
 		
 		console.log(loc);
 		if(loc.protocol == "http:") {
 			wsUri = "ws:";
 		}
-		wsUri += "//" + loc.host + ":5000";
+		wsUri += "//" + loc.host + port;
 		console.log("URI is = " + wsUri);
 
-		ws = new WebSocket(wsUri, "ws-web-server");
+		//ws = new WebSocket(wsUri, "ws-web-server");
+		ws = new WebSocket(wsUri);
 		console.log("connecting....");
 
 		ws.onopen = function() {
@@ -54,24 +56,24 @@
 			rawFile.send();
 		}
 		
-		function getContainersInfo() {
-			console.log("getContainersInfo");
-//			alert('getContainersInfo');
-//			readTextFile("getContainersInfo.txt");
-			wsSend("getContainersInfo");
+		function GetContainersInfo() {
+			console.log("GetContainersInfo");
+//			alert('GetContainersInfo');
+//			readTextFile("GetContainersInfo.txt");
+			wsSend("GetContainersInfo");
 		}
 
-		function getDeviceState() {
-			console.log("getDeviceState");
-			wsSend("getDeviceState");
+		function GetDeviceState() {
+			console.log("GetDeviceState");
+			wsSend("GetDeviceState");
 		}
 
 		</script>
 	
 	        <font face="Arial">
 		<h1>container management</h1>
-		<button type="button" onclick='getContainersInfo()'>getContainersInfo</button>
-		<button type="button" onclick='getDeviceState()'>getDeviceState</button>
+		<button type="button" onclick='GetContainersInfo()'>GetContainersInfo</button>
+		<button type="button" onclick='GetDeviceState()'>GetDeviceState</button>
 		<div id="textSection"></div>
         	</font>
 	</body>
