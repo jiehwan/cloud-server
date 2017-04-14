@@ -16,7 +16,7 @@ function send(ws) {
 				clientnum: 888}),
 		function (err) {
 			if (err) {
-				console.log(err);
+				console.log("ws.send connected :", err);
 			}
 		});
 }
@@ -37,13 +37,15 @@ wss.on("connection", function connection(ws) {
 			terminal: false
 		});
 		rl.on('line', function(line){
-			console.log("send :", JSON.stringify({ cmd: line }));
-			ws.send(JSON.stringify({ cmd: line }),
-				function (err) {
-					if(err) {
-						console.log("ws.send :", err);
-					}
-				});
+			if (line.length > 0){
+				console.log("send :", JSON.stringify({ cmd: line }));
+				ws.send(JSON.stringify({ cmd: line }),
+					function (err) {
+						if(err) {
+							console.log("ws.send :", err);
+						}
+					});
+			}
 			
 		});
 	}
