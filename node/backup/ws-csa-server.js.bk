@@ -1,0 +1,35 @@
+// server.js
+
+"use strict";
+
+const WebSocket = require("ws");
+
+const wss = new WebSocket.Server({ 
+	port: 4000 
+});
+
+console.log('port = ', wss.options.port);
+
+function sendresponse(ws) {
+                ws.send(JSON.stringify({ msg: 'message', 
+					command: 'welcome'}),
+			function (err) {
+				if (err) {
+					//console.log(err);
+					console.log("disconnected..");
+				}
+			});
+        }
+
+wss.on("connection", function connection(ws) {
+        console.info("ws connected");
+
+	ws.on('message', function incoming(message) {
+		console.log('received: %s', message);
+		sendresponse(ws);
+		});
+
+        if (ws.readyState === ws.OPEN) {
+                ;
+                }
+        });

@@ -1,0 +1,71 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+    <title>ws test1</title>
+
+    	<script type="text/javascript">
+
+	var ws;
+	var wsUri = "ws:";
+	var loc = window.location;
+
+	console.log(loc);
+
+	//wsUri = 'ws://10.113.76.39:4000';
+	if (loc.protocol === "http:") { wsUri = "ws:"; }
+        //wsUri += "//" + loc.host + loc.pathname.replace("test","ws/test");
+	//wsUri += "//" + loc.host + ":4000" + loc.pathname;
+	wsUri += "//" + loc.host + "/ws"
+
+	console.log('URI is = ' + wsUri);
+	
+	function wsConnect() {
+		console.log("connect",wsUri);
+		document.getElementById('state').innerHTML = "connect";
+
+		ws = new WebSocket(wsUri);
+		ws.onmessage = function(msg) {
+			var line = "";
+			var data = msg.data;
+			line += "<p>"+data+"</p>";
+			//ws.send(JSON.stringify({data:data}));
+			document.getElementById('status').innerHTML = line;
+			}
+
+		ws.onopen = function() {
+			//ws.send("Open for data");
+			console.log("connected");
+			document.getElementById('status').innerHTML = "connected";
+			}
+
+		ws.onclose = function() {
+			console.log("closed");
+			document.getElementById('status').innerHTML = "closed";
+			}
+		}
+	function wsDisConnect() {
+		console.log(ws);
+		if(ws) ws.close();
+		document.getElementById('state').innerHTML = "wsDisConnect";
+		}
+	function wsSend() {
+		console.log(ws);
+		if(ws) ws.send(JSON.stringify({ msg: 'test message', id: 'web-server'}));
+                }
+
+    </script>
+
+    </head>
+    <body onload="wsConnect();" onunload="wsDisConnect();">
+        <font face="Arial">
+        <h1>ws test</h1>
+        <div id="messages"></div>
+        <button type="button" onclick='wsConnect();'>ws connect</button>
+	<button type="button" onclick='wsDisConnect();'>ws disconnect</button>
+	<button type="button" onclick='wsSend();'>ws send msg</button>
+        <hr/>
+        <div id="status">unknown</div>
+	<div id="state">-</div>
+        </font>
+    </body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>dashboard</title>		
+	</head>
+	
+	<body>
+		<script type="text/javascript">	
+
+		var ws;
+		var wsUri = "ws:";
+		var loc = window.location;
+		
+		console.log(loc);
+		if(loc.protocol == "http:") {
+			wsUri = "ws:";
+		}
+		wsUri += "//" + loc.host + ":5000";
+		console.log("URI is = " + wsUri);
+
+		ws = new WebSocket(wsUri);
+		console.log("connecting....");
+
+		ws.onopen = function() {
+			console.log("connected");
+		}
+		ws.onclose = function() {
+			console.log("closed");
+		}
+		ws.onmessage = function(msg) {
+			console.log("received data:\n");
+			console.log(msg.data);
+		}
+
+		function wsSend(command) {
+			console.log(ws);
+			if(ws) {
+				ws.send(command);
+			}
+		}
+
+		function readTextFile(file) {
+			var rawFile = new XMLHttpRequest();
+			rawFile.open("GET", file, true);
+			rawFile.onreadystatechange = function () {
+				if(rawFile.readyState === 4)
+				{
+					var allText = rawFile.responseText;
+					document.getElementById("textSection").innerHTML = allText;
+				}
+			}
+			rawFile.send();
+		}
+		
+		function getContainersInfo() {
+			console.log("getContainersInfo");
+//			alert('getContainersInfo');
+			readTextFile("getContainersInfo.txt");
+			wsSend("getContainersInfo");
+		}
+
+		</script>
+	
+	        <font face="Arial">
+		<h1>container management</h1>
+		<button type="button" onclick='getContainersInfo()'>getContainersInfo</button>
+		<div id="textSection"></div>
+        	</font>
+	</body>
+</html>
+
