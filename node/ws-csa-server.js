@@ -25,16 +25,28 @@ function send_connection(ws) {
 }
 
 function send_mesg_direct(message) {
-	if( ws_csa){
-		console.log("send command =", message);
-                //ws_csa.send(JSON.stringify({ cmd: message }),
-                ws_csa.send(message,
-                                function (err) {
-                                        if(err) {
-                                                console.log("ws.send :", err);
-                                        }
-                                });
-        }
+	var index;
+	list.resetCursor();
+    while (list.next()) {
+			console.log("-----------------------");		
+			console.log("list.length =", list.length)
+	        console.log("<direct> keyID ={%s} client{%s}", list.current.upgradeReq.headers['sec-websocket-key'], list.current.clientname);
+			console.log("<direct> send command =", message);
+
+			list.current.send(message, function (err) {
+				        	        if(err) {
+            					        console.info("<direct>ws.send :", err);
+										console.log("remove keyID ={%s} client{%s}", list.current.upgradeReq.headers['sec-websocket-key'], list.current.clientname);
+										list.current.close();
+										console.log("remove linst{%s} ", list.removeCurrent());
+										list.resetCursor();
+                					}
+				                });
+			index ++;
+    }
+
+	console.log("list.length =", list.length)
+
 }
 
 
@@ -47,7 +59,6 @@ var rl = readline.createInterface({
 });
 
 
-var ws_csa;
 
 var connections = new Map();
 var connectionID;
@@ -58,7 +69,7 @@ var targetlists = new LinkedList();
 
 
 function responseToWeb(ws, message) { 
-	console.log("rcv KeyID =", ws.upgradeReq.headers['sec-websocket-key']);
+	console.log("rcv keyID ={%s} client{%s}", ws.upgradeReq.headers['sec-websocket-key'], ws.clientname);
 	console.log("message =", message);
 
 	// convert from string to struct
@@ -100,15 +111,6 @@ wss.on("connection", function connection(ws) {
 
 	//list.push(connectionID);
 
-	list.push(ws);
-	console.log("list.length =", list.length)
-	console.log("list.connections =", list.current._socket._server._connections);
-	list.resetCursor();
-	while (list.next()) {
-		console.log("keyID =", list.current.upgradeReq.headers['sec-websocket-key']);
-	}
-	 
-
 	ws.on('message', function incoming(message) {
 		console.log('received: %s', message);
 		console.log('received cmd: %s', JSON.parse(message).cmd);
@@ -117,6 +119,15 @@ wss.on("connection", function connection(ws) {
 		switch(rcv.cmd){
 			case 'request':
 				ws.clientname = rcv.name;
+
+				list.push(ws);
+				console.log("list.length =", list.length)
+				console.log("ws.connections =", ws._socket._server._connections);
+				list.resetCursor();
+				while (list.next()) {
+					console.log("keyID ={%s} client ={%s}", list.current.upgradeReq.headers['sec-websocket-key'], list.current.clientname);
+				}
+
 				send_connection(ws);
 				break;
 			default:
@@ -126,20 +137,34 @@ wss.on("connection", function connection(ws) {
 		//responseToWeb(this, message);
 	});
 
-        if (ws.readyState === ws.OPEN) {
-		ws_csa = ws;
- 
+    if (ws.readyState === ws.OPEN) {
+
+		// input from prompt 
 		rl.on('line', function(line){
 			if (line.length > 0){
-				console.log("send :", JSON.stringify({ cmd: line }));
+				console.log("-----------------------");
+				console.log("<shell> [%s] send :", ws.clientname, JSON.stringify({ cmd: line }));
 				ws.send(JSON.stringify({ cmd: line }),
 					function (err) {
 						if(err) {
-							console.log("ws.send :", err);
+							console.info("<shell>ws.send :", err);
+
+							// remove ws in list
+							list.resetCursor();
+							while (list.next()) {
+								if(list.current.upgradeReq.headers['sec-websocket-key'] == ws.upgradeReq.headers['sec-websocket-key']){
+									list.removeCurrent();
+									console.log("<shell> remove KeyID ={%s} client{%s}", list.current.upgradeReq.headers['sec-websocket-key'], list.current.clientname);
+									list.removeCurrent();
+									ws.close();
+									break;
+								}
+							}
+							ws.close();
+							return;
 						}
 					});
 			}
-			
 		});
 	}
 });

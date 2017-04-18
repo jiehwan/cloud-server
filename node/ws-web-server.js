@@ -46,7 +46,7 @@ wsServer.on('request', function(request) {
 
             console.log('Received Message: ' + message.utf8Data);
 
-	    wsc.send(JSON.stringify({cmd:message.utf8Data}));
+		    wsc.send(JSON.stringify({cmd:message.utf8Data}));
         
 /////////////////////////////////////////////////////////////////////////////
         }
@@ -65,32 +65,41 @@ var wsc;
 var wscUri = 'ws://localhost:4002';
 
 function wsConnect() {
-	console.log("connect",wscUri);
+	console.log("connect :",wscUri);
 	
-	//try { ws = new WebSocket(wscUri); }
-	//catch (e) {console.log("WebSocket error :", e);} 
-
 	wsc = new WebSocket(wscUri);
-	
 
-       	wsc.onmessage = function(msg) {
+   	wsc.onmessage = function(msg) {
                 var line = "";
                	var data = msg.data;
                 line += "<p>"+data+"</p>";
 
-	        console.log("receive data from csa : " + line);
+	    console.log("receive data from csa : " + line);
 
 		//connection.sendUTF("From ws-web-server: " + line.utf8Data);
 		connection.send("From ws-web-server: " + line);
-       	}
-        wsc.onopen = function() {
-       	        //ws.send("Open for data");
-               	console.log("connected");
-        }
-       	wsc.onclose = function() {
-               	console.log("closed");
-        }
+    }
+
+	wsc.onopen = function() {
+            //ws.send("Open for data");
+           	console.log("connected");
+    }
+    
+	wsc.onclose = function() {
+           	console.log("closed");
+			setTimeout( function() {
+				wsConnect();
+				}, 1000);
+    }
 }
+
+process.on('uncaughtException', function (err) {
+	console.log(err);
+	setTimeout(function(){
+			console.log("timeout~~");
+	        wsConnect();
+			},1000);
+}); 
 
 wsConnect();
 
