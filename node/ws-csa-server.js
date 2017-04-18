@@ -26,6 +26,14 @@ function send_connection(ws) {
 
 function send_mesg_direct(message) {
 	var index;
+	
+	// clear response data
+	TargetInfoList.resetCursor();
+	while (TargetInfoList.next()) {
+		TargetInfoList.removeCurrent();
+		TargetInfoList.resetCursor();
+	}
+	
 	list.resetCursor();
     while (list.next()) {
 			console.log("-----------------------");		
@@ -65,8 +73,9 @@ var connectionID;
 
 var LinkedList = require('linkedlist');
 var list = new LinkedList();
-var targetlists = new LinkedList();
 
+
+var TargetInfoList = new LinkedList();
 
 function responseToWeb(ws, message) { 
 	console.log("rcv keyID ={%s} client{%s}", ws.upgradeReq.headers['sec-websocket-key'], ws.clientname);
@@ -74,13 +83,59 @@ function responseToWeb(ws, message) {
 
 	// convert from string to struct
 	var rcv = JSON.parse(message);
-	console.log("message ={%s}", message);
-	if(rcv.cmd == 'getContainerLists')
+	console.log("<toWeb> message ={%s}", message);
+	console.log("<toWeb> cmd ={%s}", rcv.Cmd);
+	if(rcv.Cmd == 'GetContainersInfo')
 	{
-		list.resetCursor();
-	    while (list.next()) {
-   	        console.log("messages ={%s}{%s}", list.current.clientname);
-      	}
+		console.log("<toWeb> TargetInfoList length =%d", TargetInfoList.length);
+
+		var found = 0;
+
+		TargetInfoList.resetCursor();
+	    while (TargetInfoList.next()) {
+			if(ws.upgradeReq.headers['sec-websocket-key'] == TargetInfoList.current.key) {
+				console.log("<toWeb> found same key =%s", TargetInfoList.current.key);
+				found =1;
+				break;
+			}
+		}
+		if(found == 0) {
+				console.log("<toWeb> add new clientname ={%s}", list.current.clientname);
+				
+				var targetInfoObject = { "key": "", "client": "",  "body": "" };
+				targetInfoObject.client = ws.clientname;
+				targetInfoObject.key = ws.upgradeReq.headers['sec-websocket-key'];
+				targetInfoObject.body = message;
+
+				console.log("<toWeb> info =", targetInfoObject);
+				TargetInfoList.push(targetInfoObject);
+		}
+
+		if(TargetInfoList.length)
+		{
+			var msg_str = "";
+			
+			TargetInfoList.resetCursor();
+			while (TargetInfoList.next()) {
+				if(TargetInfoList.head == TargetInfoList.current) {
+					msg_str += "[";
+				}
+				else {
+					msg_str += ", ";
+				}
+
+				msg_str += TargetInfoList.current.body;
+
+				if(TargetInfoList.tail == TargetInfoList.current){
+					msg_str += "]";
+                }
+			}
+			send_web(msg_str);
+
+
+		}
+		// bind all target response into a single message
+
 	}
 	else
 	{
@@ -204,7 +259,7 @@ wssin.on("connection", function connection(ws) {
         ws.on('message', function incoming(message) {
                 console.log('internal port received: %s', message);
 
-		send_mesg_direct(message);
+				send_mesg_direct(message);
                 });
 
         if (ws.readyState === ws.OPEN) {

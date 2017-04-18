@@ -2,25 +2,42 @@
 <html>
 	<head>
 		<meta charset="utf-8">
-		<title>dashboard</title>		
+		<title>dashboard</title>
+		<style type = "text/css">
+		th, td {
+			border: 1px solid;
+		}
+		.textBox {
+			width: 200px;
+			margin: 10px;
+			padding: 10px;
+			float: left;
+		}
+		</style>
 	</head>
 	
 	<body>
-		<script type="text/javascript">	
+		<script type="text/javascript">
 
-		var ws;
+		var ws = "";
 		var wsUri = "ws:";
 		var loc = window.location;
-		var port = ":4001";
+		var totalContentCnt = 0;
+		var contentInfo = new Array();
 		
+		function contentInfo() {
+			var ContainerID;
+			var DeviceID;
+			var ContainerStatus;
+		}
+
 		console.log(loc);
 		if(loc.protocol == "http:") {
 			wsUri = "ws:";
 		}
-		wsUri += "//" + loc.host + port;
+		wsUri += "//" + loc.host + ":4001";
 		console.log("URI is = " + wsUri);
 
-		//ws = new WebSocket(wsUri, "ws-web-server");
 		ws = new WebSocket(wsUri);
 		console.log("connecting....");
 
@@ -30,10 +47,121 @@
 		ws.onclose = function() {
 			console.log("closed");
 		}
-		ws.onmessage = function(msg) {
+		ws.onmessage = function(event) {
+			var msg = JSON.parse(event.data);
+			var displayIndex = 0;
 			console.log("received data:\n");
-			console.log(msg.data);
-			document.getElementById("textSection").innerHTML = msg.data;
+			console.log(event.data);
+//			document.getElementById("textSection").innerHTML = event.data;
+			console.log("msg.length: " + msg.length);
+			for(var i=0; i<msg.length; i++) {
+				console.log("msg[" + i + "].ContainerCount: " + msg[i].ContainerCount);
+				for(var j=0; j<msg[i].ContainerCount; j++) {
+					var divImageName = document.createElement('div')
+						, divContainerName = document.createElement('div')
+						, divDeviceID = document.createElement('div')
+						, divContainerStatus = document.createElement('div')
+						, textImageVersion = document.createElement('input')
+						, btnUpdateImage = document.createElement('button')
+						, divTextAlign = document.createElement('div');
+				 
+					divImageName.id = "ImageName[" + displayIndex + "]";
+					divContainerName.id = "ContainerName[" + displayIndex + "]";
+					divDeviceID.id = "DeviceID[" + displayIndex + "]";
+					divContainerStatus.id = "ContainerStatus[" + displayIndex + "]";
+					textImageVersion.id = "ImageVersion[" + displayIndex + "]";
+					btnUpdateImage.id = "UpdateImage[" + displayIndex + "]";
+					divTextAlign.id = "TextAlign[" + displayIndex + "]";
+					displayIndex++;
+
+					document.body.appendChild(divImageName);
+					document.getElementById(divImageName.id).style.width = "250px";
+					document.getElementById(divImageName.id).style.margin = "10px";
+            	    document.getElementById(divImageName.id).style.padding = "10px";
+                	document.getElementById(divImageName.id).style.float = "left";
+	                document.getElementById(divImageName.id).style.border = "1px solid";
+    	            document.getElementById(divImageName.id).innerHTML = msg[i].ContainerInfo[j].ImageName;
+//					console.log(document.getElementById(divImageName.id).innerHTML);
+//					console.log(divImageName.id);
+
+					document.body.appendChild(divContainerName);
+					document.getElementById(divContainerName.id).style.width = "250px";
+					document.getElementById(divContainerName.id).style.margin = "10px";
+					document.getElementById(divContainerName.id).style.padding = "10px";
+					document.getElementById(divContainerName.id).style.float = "left";
+					document.getElementById(divContainerName.id).style.border = "1px solid";
+					document.getElementById(divContainerName.id).innerHTML = msg[i].ContainerInfo[j].ContainerName;
+
+					document.body.appendChild(divDeviceID);
+					document.getElementById(divDeviceID.id).style.width = "200px";
+        	        document.getElementById(divDeviceID.id).style.margin = "10px";
+            	    document.getElementById(divDeviceID.id).style.padding = "10px";
+                	document.getElementById(divDeviceID.id).style.float = "left";
+	                document.getElementById(divDeviceID.id).style.border = "1px solid";
+					document.getElementById(divDeviceID.id).innerHTML = msg[i].DeviceID;
+
+					document.body.appendChild(divContainerStatus);
+					document.getElementById(divContainerStatus.id).style.width = "100px";
+        	        document.getElementById(divContainerStatus.id).style.margin = "10px";
+            	    document.getElementById(divContainerStatus.id).style.padding = "10px";
+	                document.getElementById(divContainerStatus.id).style.float = "left";
+    	            document.getElementById(divContainerStatus.id).style.border = "1px solid";
+					document.getElementById(divContainerStatus.id).innerHTML = msg[i].ContainerInfo[j].ContainerStatus;
+					textImageVersion.setAttribute("type", "text");
+					document.body.appendChild(textImageVersion);
+                    document.getElementById(textImageVersion.id).style.width = "80px";
+                    document.getElementById(textImageVersion.id).style.margin = "10px";
+                    document.getElementById(textImageVersion.id).style.padding = "10px";
+                    document.getElementById(textImageVersion.id).style.float = "left";
+                    document.getElementById(textImageVersion.id).style.border = "1px solid";
+//                    document.getElementById(btnUpdateImage.id).innerHTML = "Update";
+					
+					btnUpdateImage.setAttribute("onclick", "getImageVersion(this)");
+					document.body.appendChild(btnUpdateImage);
+					document.getElementById(btnUpdateImage.id).style.width = "80px";
+					document.getElementById(btnUpdateImage.id).style.margin = "10px";
+					document.getElementById(btnUpdateImage.id).style.padding = "10px";
+					document.getElementById(btnUpdateImage.id).style.float = "left";
+					document.getElementById(btnUpdateImage.id).style.border = "1px solid";
+					document.getElementById(btnUpdateImage.id).innerHTML = "Update";
+
+					document.body.appendChild(divTextAlign);
+					document.getElementById(divTextAlign.id).style.clear = "left";
+				}
+			}
+		}
+
+		function getImageVersion(index) {
+			var thisElement = index.getAttribute("id");
+			var textImageVersionElement = "ImageVersion";
+			var divImageNameElement = "ImageName";
+			var startIdx = thisElement.indexOf("[");
+
+			console.log("[getImageVersion] thisElement: " + thisElement);
+			console.log("[getImageVersion] startIdx: " + startIdx);
+
+			for(var i=startIdx; i<thisElement.length; i++) {
+				textImageVersionElement += thisElement.charAt(i);
+				divImageNameElement += thisElement.charAt(i);
+
+			}
+			console.log("[getImageVersion] textImageVersionElement: " + textImageVersionElement);
+			console.log("[getImageVersion] divImageNameElement: " + divImageNameElement);
+
+			updateImage(textImageVersionElement, divImageNameElement);
+		}
+
+		function updateImage(versionElement, nameElement) {
+			var inputImageVersion = document.getElementById(versionElement).value;
+			var inputImageName = document.getElementById(nameElement).innerHTML;
+
+			console.log("[updateImage] inputImageVersion: " + inputImageVersion);
+			console.log("[updateImage] inputImageName: " + inputImageName);
+			var msg = {
+				"Cmd": "UpdateImage",
+				"DeviceID": "",
+				"ImageName": "",
+			}
 		}
 
 		function wsSend(command) {
@@ -50,32 +178,53 @@
 				if(rawFile.readyState === 4)
 				{
 					var allText = rawFile.responseText;
-					document.getElementById("textSection").innerHTML = allText;
+//					document.getElementById("textSection").innerHTML = allText;
 				}
 			}
 			rawFile.send();
 		}
-		
-		function GetContainersInfo() {
-			console.log("GetContainersInfo");
-//			alert('GetContainersInfo');
-//			readTextFile("GetContainersInfo.txt");
+
+		function getContainersInfo() {
+			console.log("getContainersInfo");
+//			alert('getContainersInfo');
+//			readTextFile("getContainersInfo.txt");
 			wsSend("GetContainersInfo");
 		}
 
-		function GetDeviceState() {
-			console.log("GetDeviceState");
+		function getDeviceState() {
+			console.log("getDeviceState");
 			wsSend("GetDeviceState");
+		}
+
+		var regImgCnt;		
+
+		function getRegistryImgCnt(ContainerName) {
+			/* temp for poc */
+			return 2;
 		}
 
 		</script>
 	
-	        <font face="Arial">
-		<h1>container management</h1>
-		<button type="button" onclick='GetContainersInfo()'>GetContainersInfo</button>
-		<button type="button" onclick='GetDeviceState()'>GetDeviceState</button>
-		<div id="textSection"></div>
-        	</font>
+        <font face="Arial">
+			<h1>container management</h1>
+<!--			
+			<div id="ContainerID" class="textBox">ContainerID</div>
+			<div id="DeviceID" class="textBox">DeviceID</div>
+			<div id="ContainerStatus" class="textBox">ContainerStatus</div>
+-->
+			<div id="InputRequest" style="clear:left">			
+	        	<button type="button" onclick='getContainersInfo()'>getContainersInfo</button>
+	    	    <button type="button" onclick='getDeviceState()'>getDeviceState</button>
+			</div>
+			<hr>
+			<b>
+				<div style="width:250px; margin:10px; padding:10px; float:left">Image</div>
+				<div style="width:250px; margin:10px; padding:10px; float:left">Container</div>
+				<div style="width:200px; margin:10px; padding:10px; float:left">Device</div>
+				<div style="width:140px; margin:10px; padding:10px; float:left">Status</div>
+			</b>
+			<div style="clear:left"></div>
+      	</font>
 	</body>
 </html>
 

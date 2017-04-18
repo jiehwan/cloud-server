@@ -70,14 +70,8 @@ function wsConnect() {
 	wsc = new WebSocket(wscUri);
 
    	wsc.onmessage = function(msg) {
-                var line = "";
-               	var data = msg.data;
-                line += "<p>"+data+"</p>";
-
-	    console.log("receive data from csa : " + line);
-
-		//connection.sendUTF("From ws-web-server: " + line.utf8Data);
-		connection.send("From ws-web-server: " + line);
+	    console.log("receive data from csa : " + msg.data);
+		connection.send(msg.data);
     }
 
 	wsc.onopen = function() {
