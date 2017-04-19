@@ -20,6 +20,7 @@
 		var wsUri = "ws:";
 		var loc = window.location;
 		var totalContentCnt = 0;
+		var connected = 0;
 
 		console.log(loc);
 		if(loc.protocol == "http:") {
@@ -33,6 +34,7 @@
 
 		ws.onopen = function() {
 			console.log("connected");
+			connected = 1;
 		}
 		ws.onclose = function() {
 			console.log("closed");
@@ -233,6 +235,19 @@
 			wsSend("GetDeviceState");
 		}
 
+		function initContentsDisplay() {
+			console.log("initContentsDisplay > state :" + connected);
+			var hndl = setInterval(checkConnection, 100);
+			function checkConnection(){
+				if(connected == 1) {
+					clearInterval(hndl);
+					console.log("checked connected...");
+					// add here, initialization
+					getContainersInfo();
+				}
+			}
+		}
+
 		</script>
 
         <font face="Arial">
@@ -256,6 +271,9 @@
 			</b>
 			<div style="clear:left"></div>
 		</form>
+
+		<script>initContentsDisplay();</script>
+
 <!--
 		<div id="pre_set" style="display:none">
     		<input type="text" name="" value="" style="width:200px">
