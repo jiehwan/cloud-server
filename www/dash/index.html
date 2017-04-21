@@ -10,6 +10,48 @@
 			padding: 10px;
 			float: left;
 		}
+		.cssImageName {
+			width: 250px;
+			margin: 10px;
+			padding: 10px;
+			float: left;
+			text-overflow: ellipsis;
+			overflow: hidden;
+			white-space: nowrap;
+			border: 1px solid;
+		}
+		.cssContainerName {
+			width: 200px;
+			margin: 10px;
+			padding: 10px;
+			float: left;
+			text-overflow: ellipsis;
+			overflow: hidden;
+			white-space: nowrap;
+			border: 1px solid;
+		}
+		.cssDeviceID {
+			width: 150px;
+			margin: 10px;
+			padding: 10px;
+			float: left;
+			text-overflow: ellipsis;
+			overflow: hidden;
+			white-space: nowrap;
+			border: 1px solid;
+		}
+		.cssContainerStatus {
+			width: 100px;
+			margin: 10px;
+			padding: 10px;
+			float: left;
+			text-overflow: ellipsis;
+			overflow: hidden;
+			white-space: nowrap;
+			border: 1px solid;
+		}
+
+
 		</style>
 	</head>
 
@@ -46,26 +88,30 @@
 			console.log(event.data);
 			console.log("msg.length: " + msg.length);
 
-			clearDisplay();
-			display(msg);
+			/*************************************************/
+			/* need to seperate Cmd for displaying http page */
+			/*************************************************/
+			if(msg.length > 0) {
+				clearDisplay();
+				display(msg);
+			}
 		}
 
 		function clearElement(string) {
-			for(var j=0; j<10; j++) {
-				var idstring = string + "[" + j + "]";
+			var index = 0;
+			while(1) {
+				var idstring = string + "[" + index + "]";
 				var element = document.getElementById(idstring);
-				if(element)
-				{
+				if(element) {
 					element.parentNode.removeChild(element);
-				}
-				else
-				{
+					index++;
+				} else {
 					break;
 				}
 			}
 		}
-		
-		
+
+
 		function clearDisplay() {
 			clearElement("ImageVersion");
 			clearElement("UpdateImage");
@@ -74,6 +120,15 @@
 			clearElement("DeviceID");
 			clearElement("ContainerStatus");
 			clearElement("TextAlign");
+		}
+
+		function displayFullString() {
+			console.log("displayFullString()");
+		}
+
+		function eventFromBox(elementId) {
+			document.getElementById(elementId).style.color = "Black";
+			console.log("eventFromBox: " + elementId);
 		}
 
 		function display(msg) {
@@ -89,7 +144,7 @@
 						, textImageVersion = document.createElement('input')
 						, btnUpdateImage = document.createElement('button')
 						, divTextAlign = document.createElement('div');
-				 
+
 					divImageName.id = "ImageName[" + displayIndex + "]";
 					divContainerName.id = "ContainerName[" + displayIndex + "]";
 					divDeviceID.id = "DeviceID[" + displayIndex + "]";
@@ -99,52 +154,30 @@
 					divTextAlign.id = "TextAlign[" + displayIndex + "]";
 					displayIndex++;
 
-
-
-
 					document.body.appendChild(divImageName);
-					document.getElementById(divImageName.id).style.width = "250px";
-					document.getElementById(divImageName.id).style.margin = "10px";
-            	    document.getElementById(divImageName.id).style.padding = "10px";
-                	document.getElementById(divImageName.id).style.float = "left";
-	                document.getElementById(divImageName.id).style.border = "1px solid";
-    	            document.getElementById(divImageName.id).innerHTML = msg[i].ContainerInfo[j].ImageName;
+					document.getElementById(divImageName.id).className = "cssImageName";
+					document.getElementById(divImageName.id).onmouseover = eventFromBox(divImageName.id);
+					document.getElementById(divImageName.id).innerHTML = msg[i].ContainerInfo[j].ImageName;
 
 					document.body.appendChild(divContainerName);
-					document.getElementById(divContainerName.id).style.width = "250px";
-					document.getElementById(divContainerName.id).style.margin = "10px";
-					document.getElementById(divContainerName.id).style.padding = "10px";
-					document.getElementById(divContainerName.id).style.float = "left";
-					document.getElementById(divContainerName.id).style.border = "1px solid";
+					document.getElementById(divContainerName.id).className = "cssContainerName";
 					document.getElementById(divContainerName.id).innerHTML = msg[i].ContainerInfo[j].ContainerName;
 
 					document.body.appendChild(divDeviceID);
-					document.getElementById(divDeviceID.id).style.width = "200px";
-        	        document.getElementById(divDeviceID.id).style.margin = "10px";
-            	    document.getElementById(divDeviceID.id).style.padding = "10px";
-                	document.getElementById(divDeviceID.id).style.float = "left";
-	                document.getElementById(divDeviceID.id).style.border = "1px solid";
+					document.getElementById(divDeviceID.id).className = "cssDeviceID";
 					document.getElementById(divDeviceID.id).innerHTML = msg[i].DeviceID;
 
 					document.body.appendChild(divContainerStatus);
-					document.getElementById(divContainerStatus.id).style.width = "100px";
-        	        document.getElementById(divContainerStatus.id).style.margin = "10px";
-            	    document.getElementById(divContainerStatus.id).style.padding = "10px";
-	                document.getElementById(divContainerStatus.id).style.float = "left";
-    	            document.getElementById(divContainerStatus.id).style.border = "1px solid";
+					document.getElementById(divContainerStatus.id).className = "cssContainerStatus";
 					document.getElementById(divContainerStatus.id).innerHTML = msg[i].ContainerInfo[j].ContainerStatus;
 
-/*
-					divImageVersion.innerHTML = document.getElementById('pre_set').innerHTML;
-					document.getElementById('field').appendChild(divImageVersion);
-*/
 					textImageVersion.setAttribute("type", "text");
 					document.body.appendChild(textImageVersion);
-                    document.getElementById(textImageVersion.id).style.width = "80px";
-                    document.getElementById(textImageVersion.id).style.margin = "10px";
-                    document.getElementById(textImageVersion.id).style.padding = "10px";
-                    document.getElementById(textImageVersion.id).style.float = "left";
-                    document.getElementById(textImageVersion.id).style.border = "1px solid";
+					document.getElementById(textImageVersion.id).style.width = "80px";
+					document.getElementById(textImageVersion.id).style.margin = "10px";
+					document.getElementById(textImageVersion.id).style.padding = "10px";
+					document.getElementById(textImageVersion.id).style.float = "left";
+					document.getElementById(textImageVersion.id).style.border = "1px solid";
 
 					btnUpdateImage.setAttribute("onclick", "execUpdateImage(this)");
 					document.body.appendChild(btnUpdateImage);
@@ -154,7 +187,7 @@
 					document.getElementById(btnUpdateImage.id).style.float = "left";
 					document.getElementById(btnUpdateImage.id).style.border = "1px solid";
 					document.getElementById(btnUpdateImage.id).innerHTML = "Update";
-					
+
 					document.body.appendChild(divTextAlign);
 					document.getElementById(divTextAlign.id).style.clear = "left";
 				}
@@ -166,6 +199,7 @@
 			var textImageVersionElement = "ImageVersion";
 			var divImageNameElement = "ImageName";
 			var divDeviceIDElement = "DeviceID";
+			var divContainerNameElement = "ContainerName";
 			var startIdx = thisElement.indexOf("[");
 
 			console.log("[execUpdateImage] thisElement: " + thisElement);
@@ -175,33 +209,51 @@
 				textImageVersionElement += thisElement.charAt(i);
 				divImageNameElement += thisElement.charAt(i);
 				divDeviceIDElement += thisElement.charAt(i);
+				divContainerNameElement += thisElement.charAt(i);
 			}
 			console.log("[execUpdateImage] textImageVersionElement: " + textImageVersionElement);
 			console.log("[execUpdateImage] divImageNameElement: " + divImageNameElement);
 			console.log("[execUpdateImage] divDeviceIDElement: " + divDeviceIDElement);
+			console.log("[execUpdateImage] divContainerNameElement: " + divContainerNameElement);
 
-			updateImage(textImageVersionElement, divImageNameElement, divDeviceIDElement);
+			updateImage(textImageVersionElement
+				, divImageNameElement
+				, divDeviceIDElement
+				, divContainerNameElement
+				, divContainerNameElement);
 		}
 
-		function updateImage(versionElement, nameElement, deviceElement) {
+		function updateImage(versionElement, nameElement, deviceElement, containerElement) {
 			var inputImageVersion = document.getElementById(versionElement).value;
 			var inputImageName = document.getElementById(nameElement).innerHTML;
 			var inputDeviceID = document.getElementById(deviceElement).innerHTML;
-			var strArray = inputImageName.split(":");
-			inputImageName = strArray[0] + ":" + inputImageVersion;
+			var inputContainerName = document.getElementById(containerElement).innerHTML;
+			var strIndex = inputImageName.lastIndexOf(":");
+			var strTemp = "";
+
+			for(var i=0; i<strIndex; i++) {
+				strTemp += inputImageName.charAt(i);
+			}
+			inputImageName = strTemp + ":" + inputImageVersion;
+
+			/*******************************************************************/
+			/* temp code for input Full image name through "Version" text box */
+			inputImageName = inputImageVersion;
+			/*******************************************************************/
 
 			console.log("[updateImage] inputImageVersion: " + inputImageVersion);
 			console.log("[updateImage] inputImageName: " + inputImageName);
 			console.log("[updateImage] inputDeviceID: " + inputDeviceID);
+			console.log("[updateImage] inputContainerName: " + inputContainerName);
 
 			var msg = {
 				"Cmd": "UpdateImage",
 				"DeviceID": inputDeviceID,
+				"ContainerName": inputContainerName,
 				"ImageName": inputImageName,
 			}
 
 			console.log(JSON.stringify(msg));
-
 			wsSend(JSON.stringify(msg));
 		}
 
@@ -218,7 +270,6 @@
 			rawFile.onreadystatechange = function () {
 				if(rawFile.readyState === 4) {
 					var allText = rawFile.responseText;
-//					document.getElementById("textSection").innerHTML = allText;
 				}
 			}
 			rawFile.send();
@@ -226,8 +277,10 @@
 
 		function getContainersInfo() {
 			console.log("getContainersInfo");
-//			readTextFile("getContainersInfo.txt");
-			wsSend("GetContainersInfo");
+			var msg = {
+				"Cmd": "GetContainersInfo",
+			}
+			wsSend(JSON.stringify(msg));
 		}
 
 		function getDeviceState() {
@@ -265,9 +318,9 @@
 			<hr>
 			<b>
 				<div style="width:250px; margin:10px; padding:10px; float:left">Image</div>
-				<div style="width:250px; margin:10px; padding:10px; float:left">Container</div>
-				<div style="width:200px; margin:10px; padding:10px; float:left">Device</div>
-				<div style="width:140px; margin:10px; padding:10px; float:left">Status</div>
+				<div style="width:200px; margin:10px; padding:10px; float:left">Container</div>
+				<div style="width:150px; margin:10px; padding:10px; float:left">Device</div>
+				<div style="width:150px; margin:10px; padding:10px; float:left">Status</div>
 			</b>
 			<div style="clear:left"></div>
 		</form>
