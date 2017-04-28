@@ -192,7 +192,10 @@ wss.on("connection", function connection(ws) {
 				while (ws_client_list.next()) {
 					console.log("keyID ={%s} client ={%s}", ws_client_list.current.upgradeReq.headers['sec-websocket-key'], ws_client_list.current.clientname);
 				}
-				send_connection(ws);
+				send_connection(ws);	// response to client device
+
+				send_mesg_direct(JSON.stringify({"Cmd": "GetContainersInfo"}), "ALL");	// refresh containers lists
+
 				break;
 			default:
 				responseToWeb(this, message);
