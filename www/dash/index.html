@@ -10,8 +10,15 @@
 			padding: 10px;
 			float: left;
 		}
+		.cssFullString {
+			margin: 10px;
+			padding: 10px;
+			float: left;
+			border: 1px solid;
+		}
 		.cssImageName {
-			width: 250px;
+			width: 300px;
+			height: 20px;
 			margin: 10px;
 			padding: 10px;
 			float: left;
@@ -22,6 +29,7 @@
 		}
 		.cssContainerName {
 			width: 200px;
+			height: 20px;
 			margin: 10px;
 			padding: 10px;
 			float: left;
@@ -32,6 +40,7 @@
 		}
 		.cssDeviceID {
 			width: 150px;
+			height: 20px;
 			margin: 10px;
 			padding: 10px;
 			float: left;
@@ -42,6 +51,7 @@
 		}
 		.cssContainerStatus {
 			width: 100px;
+			height: 20px;
 			margin: 10px;
 			padding: 10px;
 			float: left;
@@ -83,6 +93,7 @@
 		}
 		ws.onmessage = function(event) {
 			var msg = JSON.parse(event.data);
+			var command = "";
 
 			console.log("received data:\n");
 			console.log(event.data);
@@ -92,8 +103,19 @@
 			/* need to seperate Cmd for displaying http page */
 			/*************************************************/
 			if(msg.length > 0) {
-				clearDisplay();
-				display(msg);
+				command = msg[0].Cmd;
+			} else {
+				command = msg.Cmd;
+			}
+			console.log("msg.Cmd: " + command);
+
+			switch(command) {
+				case "GetContainersInfo":
+					clearDisplay();
+					display(msg);
+					break;
+				default:
+					break;
 			}
 		}
 
@@ -111,24 +133,29 @@
 			}
 		}
 
-
 		function clearDisplay() {
 			clearElement("ImageVersion");
 			clearElement("UpdateImage");
 			clearElement("ImageName");
-			clearElement("ContainerName");
+			clearElement("Name");
 			clearElement("DeviceID");
-			clearElement("ContainerStatus");
+			clearElement("Status")
 			clearElement("TextAlign");
 		}
 
-		function displayFullString() {
-			console.log("displayFullString()");
+		function mouseOver(event) {
+			var thisElement = event.getAttribute("id");
+
+			console.log("[mouseOver] thisElement: " + thisElement);
+			document.getElementById(thisElement).className = "cssFullString";
 		}
 
-		function eventFromBox(elementId) {
-			document.getElementById(elementId).style.color = "Black";
-			console.log("eventFromBox: " + elementId);
+		function mouseOut(event) {
+			var thisElement = event.getAttribute("id");
+			var thisClassName = "css" + thisElement.substring(0, thisElement.indexOf("["));
+
+			console.log("[mouseOut] thisElement: " + thisElement);
+			document.getElementById(thisElement).className = thisClassName;
 		}
 
 		function display(msg) {
@@ -146,22 +173,36 @@
 						, divTextAlign = document.createElement('div');
 
 					divImageName.id = "ImageName[" + displayIndex + "]";
-					divContainerName.id = "ContainerName[" + displayIndex + "]";
+					divContainerName.id = "Name[" + displayIndex + "]";
 					divDeviceID.id = "DeviceID[" + displayIndex + "]";
-					divContainerStatus.id = "ContainerStatus[" + displayIndex + "]";
+					divContainerStatus.id = "Status[" + displayIndex + "]";
 					textImageVersion.id = "ImageVersion[" + displayIndex + "]";
 					btnUpdateImage.id = "UpdateImage[" + displayIndex + "]";
 					divTextAlign.id = "TextAlign[" + displayIndex + "]";
 					displayIndex++;
 
+					/* When width checking func is implemented, it will be opened again */
+					//divImageName.setAttribute("onmouseover", "mouseOver(this)");
+					//divImageName.setAttribute("onmouseout", "mouseOut(this)");
 					document.body.appendChild(divImageName);
 					document.getElementById(divImageName.id).className = "cssImageName";
-					document.getElementById(divImageName.id).onmouseover = eventFromBox(divImageName.id);
+					/*************************************************************************************************/
+					/* When created container from docker service, there is "@sha256:xxxxxxxx" string at image name. */
+					/* For managing ImageName, it should be removed.                                                 */
+					/*************************************************************************************************/
+					var str = msg[i].ContainerInfo[j].ImageName;
+					if(str.indexOf("@") > 0) {
+						msg[i].ContainerInfo[j].ImageName = str.substring(0, str.indexOf("@"));
+					}
+					/*************************************************************************************************/
 					document.getElementById(divImageName.id).innerHTML = msg[i].ContainerInfo[j].ImageName;
 
+					/* When width checking func is implemented, it will be opened again */
+					//divContainerName.setAttribute("onmouseover", "mouseOver(this)");
+					//divContainerName.setAttribute("onmouseout", "mouseOut(this)");
 					document.body.appendChild(divContainerName);
 					document.getElementById(divContainerName.id).className = "cssContainerName";
-					document.getElementById(divContainerName.id).innerHTML = msg[i].ContainerInfo[j].ContainerName;
+					document.getElementById(divContainerName.id).innerHTML = msg[i].ContainerInfo[j].Name;
 
 					document.body.appendChild(divDeviceID);
 					document.getElementById(divDeviceID.id).className = "cssDeviceID";
@@ -169,7 +210,7 @@
 
 					document.body.appendChild(divContainerStatus);
 					document.getElementById(divContainerStatus.id).className = "cssContainerStatus";
-					document.getElementById(divContainerStatus.id).innerHTML = msg[i].ContainerInfo[j].ContainerStatus;
+					document.getElementById(divContainerStatus.id).innerHTML = msg[i].ContainerInfo[j].Status;
 
 					textImageVersion.setAttribute("type", "text");
 					document.body.appendChild(textImageVersion);
@@ -199,7 +240,7 @@
 			var textImageVersionElement = "ImageVersion";
 			var divImageNameElement = "ImageName";
 			var divDeviceIDElement = "DeviceID";
-			var divContainerNameElement = "ContainerName";
+			var divContainerNameElement = "Name";
 			var startIdx = thisElement.indexOf("[");
 
 			console.log("[execUpdateImage] thisElement: " + thisElement);
@@ -236,11 +277,6 @@
 			}
 			inputImageName = strTemp + ":" + inputImageVersion;
 
-			/*******************************************************************/
-			/* temp code for input Full image name through "Version" text box */
-			inputImageName = inputImageVersion;
-			/*******************************************************************/
-
 			console.log("[updateImage] inputImageVersion: " + inputImageVersion);
 			console.log("[updateImage] inputImageName: " + inputImageName);
 			console.log("[updateImage] inputDeviceID: " + inputDeviceID);
@@ -249,7 +285,7 @@
 			var msg = {
 				"Cmd": "UpdateImage",
 				"DeviceID": inputDeviceID,
-				"ContainerName": inputContainerName,
+				"Name": inputContainerName,
 				"ImageName": inputImageName,
 			}
 
@@ -303,36 +339,27 @@
 
 		</script>
 
-        <font face="Arial">
+		<font face="Arial">
 		<form name=frm>
 			<h1>container management</h1>
-<!--
-			<div id="ContainerID" class="textBox">ContainerID</div>
-			<div id="DeviceID" class="textBox">DeviceID</div>
-			<div id="ContainerStatus" class="textBox">ContainerStatus</div>
--->
+
 			<div id="InputRequest" style="clear:left">
-	        	<button type="button" onclick='getContainersInfo()'>getContainersInfo</button>
-	    	    <button type="button" onclick='getDeviceState()'>getDeviceState</button>
+				<button type="button" onclick='getContainersInfo()'>getContainersInfo</button>
+				<button type="button" onclick='getDeviceState()'>getDeviceState</button>
 			</div>
 			<hr>
 			<b>
-				<div style="width:250px; margin:10px; padding:10px; float:left">Image</div>
-				<div style="width:200px; margin:10px; padding:10px; float:left">Container</div>
+				<div style="width:300px; margin:10px; padding:10px; float:left">Image</div>
+				<div style="width:200px; margin:10px; padding:10px; float:left">Service</div>
 				<div style="width:150px; margin:10px; padding:10px; float:left">Device</div>
-				<div style="width:150px; margin:10px; padding:10px; float:left">Status</div>
+				<div style="width:100px; margin:10px; padding:10px; float:left">ServiceState</div>
+				<div style="width:100px; margin:10px; padding:10px; float:left">Version</div>
 			</b>
 			<div style="clear:left"></div>
 		</form>
 
 		<script>initContentsDisplay();</script>
 
-<!--
-		<div id="pre_set" style="display:none">
-    		<input type="text" name="" value="" style="width:200px">
-		</div>
-		<div id="field"></div>
--->
-      	</font>
+		</font>
 	</body>
 </html>
