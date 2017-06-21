@@ -274,7 +274,7 @@ function convertMsg_from_web_to_csa(message) {
 		case "UpdateImage":
 			sendMsg = {
 				"Cmd": rcv.Cmd,
-				"ContainerName": rcv.ContainerName,
+				"Name": rcv.Name,
 				"ImageName": rcv.ImageName,
 			}
 			destClient = rcv.DeviceID;
